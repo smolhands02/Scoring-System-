@@ -1,22 +1,22 @@
 1. HOW TO RUN THE PROGRAM :
-   (i) Requirements : 
--> Java JDK 8 or higher
--> No external Libraries required - uses only the Java Standard Library 
--> Place the following CSV files in the same folder as Scoring_System.java :
+ Requirements : 
+- Java JDK 8 or higher
+- No external Libraries required - uses only the Java Standard Library 
+- Place the following CSV files in the same folder as Scoring_System.java :
 . mentors.csv
 . students.csv
 . interactions.csv
 . feedbacks.csv
 
 2. INPUT FILES
-   (i) menter.csv
+ - menter.csv
    Information about mentors
     Column                           Description
     MentorID                         Unique mentor identifier
     Name                             Mentor name
     Domain                           Mentor expertise
     Projects                         List of projects IDs (comma separated)
-   (ii) students.csv
+- students.csv
    Information about mentees
     Column                           Description
     StudentID                        Unique student identifier
@@ -24,7 +24,7 @@
     ProjectID                        Project the student is working on
     MilestonesCompleted              Number of completed milestones
     TotalMilestones                  Total milestones assigned
-   (iii) interaction.csv             
+- interaction.csv             
    Mentor - Mentee interaction data  
      Column                          Description
      MentorID                        Unique mentor identifier
@@ -33,18 +33,18 @@
      CodeReviews                     Number of code reviews conducted
      Messages                        Number of discussion messages exchanged
      AvgResponseTime                 Average mentor response time (hours)
-   (iv) feedbacks.csv
+- feedbacks.csv
    Student feedback ratings for mentors by their mentees
      Column                          Description
      MentorID                        Unique mentor identifier
      StudentID                       Unique student identifier
      Rating                          Student rating for their mentor (1-5)
 3. OUTPUT
-   (i) Output on the output terminal :
+- Output on the output terminal :
    mentor_scores.csv written successfully.
-   (ii) Output File :
-   The output file is a csv file containing the ranked list of mentors sorted by Final Score in descending order.
-   name : mentor_scores.csv
+- Output File :
+  . The output file is a csv file containing the ranked list of mentors sorted by Final Score in descending order.
+  . name : mentor_scores.csv
      Column                          Description
      Rank                            Mentor rank
      Mentor_ID                       Unique mentor identifier
@@ -88,14 +88,3 @@
 - Students : Represents one mentee with all their basic information
 - Interaction : Represents one mentor-mentee interaction record.
 - MentorResult : Stores the final computed scores for one mentor after all calculations are done.
-Project Structure 
-Mentor Scoring System/
-├── src/
-│   └── Scoring_System.java    ← main source code
-├── mentors.csv                ← input
-├── students.csv               ← input
-├── interactions.csv           ← input
-├── feedbacks.csv              ← input
-├── mentor_scores.csv          ← output (generated on run)
-├── README.md                  ← this file
-└── requirements.txt           ← dependencies
