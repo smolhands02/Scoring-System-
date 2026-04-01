@@ -49,11 +49,17 @@ Information about mentors
   . Rank                            Mentor rank
   . Mentor_ID                       Unique mentor identifier
   . Name                            Mentor name
-  . Progress Score                  Student milestone completion score
-  . Responsiveness Score            Mentor response time score
-  . Engagement Score                Mentor-Student interaction score
-  . Feedback Score                  Weighted student feedback score
   . Final Score                     Combined weighted final score
+  . Rank                            Mentor rank
+- File to store the data :
+  name : mentor_previousScores.csv 
+    . Column                          Description
+  . Rank                            Mentor rank
+  . Mentor_ID                       Unique mentor identifier
+  . Name                            Mentor name
+  . Final Score                     Combined weighted final score
+  . Rank                            Mentor rank
+  . No. of Evaluation Skipped       No. of evaluation skipped
 4. Functions/Methods :
 - (i) studentsPS() : 
 - Function used to calculate the aggregate progress of a mentor's mentees.
@@ -88,3 +94,4 @@ Information about mentors
 - Students : Represents one mentee with all their basic information
 - Interaction : Represents one mentor-mentee interaction record.
 - MentorResult : Stores the final computed scores for one mentor after all calculations are done.
+- History : Stores the final score and no. of evaluation skipped for given Mentor_ID.
