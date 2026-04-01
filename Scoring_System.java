@@ -43,20 +43,23 @@ public class Scoring_System {
 
         }
     }
+    static class History{
+        double sc; //score
+        int sk; //no.of skips
+        History(double s, int k){
+            sc=s;
+            sk=k;
+        }
+    }
 
     static class MentorResult {
         String mID, na;
-        double PS, RS, ES, FES, FIS; //PS for Progress Score, RS for Responsive Score, ES for engagement score, FES for feedback score
-        int rank;
-
-        MentorResult(String m, String n, double a, double b, double c, double d, double e) {
+        double FIS; //FIS for final score
+        int rank, ev_sk; //evaluation skipped
+        MentorResult(String m, String n, double e) {
             mID = m;
             na = n;
-            PS = a;
-            RS = b;
-            ES = c;
-            FES = d;
-            FIS = e; //FIS for final score
+            FIS = e;
         }
     }
 
@@ -199,45 +202,34 @@ public class Scoring_System {
         }
         return l;
     }
-    static Map<String, Double> parsePreviousScore(String filename){
-        Map<String, Double> map = new LinkedHashMap<>();
+    static Map<String, History> parseEvaluation(String filename){
+        Map<String, History> map = new LinkedHashMap<>();
         try(BufferedReader br = new BufferedReader(new FileReader(filename))){
             String en = br.readLine();
             while((en = br.readLine()) != null) {
                 String[] p = en.split(",", -1);
-                if(p.length < 2)
+                if(p.length < 6)
                     continue;
-                String id = p[0].trim();
-                double sc = Double.parseDouble(p[1].trim());
-                map.put(id, sc);
+                map.put(p[0].trim(), new History(Double.parseDouble(p[2].trim()), Integer.parseInt(p[5].trim())));
             }
         } catch (IOException e) {
             //ignoring this function if data is not available
         }
         return map;
     }
-    static Map<String, Integer> parseEvaluation(String filename){
-        Map<String, Integer> map = new LinkedHashMap<>();
-        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
-            String en = br.readLine();
-            while((en = br.readLine()) != null) {
-                String[] p = en.split(",", -1);
-                if(p.length < 2)
-                    continue;
-                String id = p[0].trim();
-                int ev = Integer.parseInt(p[1].trim());
-                map.put(id, ev);
-            }
-        } catch (IOException e) {
-            //ignoring this function if data is not available
-        }
-        return map;
-    }
-    static void writeCSV(List<MentorResult> res, String filename) throws IOException {
+    static void writeCSV1(List<MentorResult> res, String filename) throws IOException {
         try(PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
-            pw.println("Rank,Mentor_ID,Name,Progress Score,Responsiveness Score,Engagement Score,Feedback Score,Final Score");
+            pw.println("Mentor_ID,Name,Final Score,Rank");
             for(MentorResult r : res){
-                pw.printf("%d,%s,%s,%.6f,%.6f,%.6f,%.6f,%.6f%n", r.rank, r.mID, r.na, r.PS, r.RS, r.ES, r.FES, r.FIS);
+                pw.printf("%s,%s,%.6f,%d%n", r.mID, r.na, r.FIS, r.rank);
+            }
+        }
+    }
+    static void writeCSV2(List<MentorResult> res, String filename) throws IOException {
+        try(PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
+            pw.println("Mentor_ID,Name,Final Score,Rank,No. of Evaluation Skipped");
+            for(MentorResult r : res){
+                pw.printf("%s,%s,%.6f,%d,%d%n", r.mID, r.na, r.FIS, r.rank, r.ev_sk);
             }
         }
     }
@@ -245,8 +237,7 @@ public class Scoring_System {
         List<Mentor> mentors = parseMentors("mentors.csv");
         List<Student> allStudents = parseStudents("students.csv");
         List<Interaction> allInteract = parseInteraction("interactions.csv");
-        Map<String, Double> prevScores = parsePreviousScore("mentor_previousScores.csv");
-        Map<String, Integer> evalMap = parseEvaluation("mentor_eva.csv");
+        Map<String, History> evalMap = parseEvaluation("mentor_previousScores.csv");
         Map<String,Double> feedbackMap = parseFeedback("feedbacks.csv");
         Map<String, Student> studentMap = new LinkedHashMap<>();
         for(Student s : allStudents){
@@ -291,17 +282,16 @@ public class Scoring_System {
             double FES = menteeFBS(ratings, mStudents);
             double M_c = w1*PS + w2*RS + w3*ES + w4*FES;
             double M_f = M_c;
-            if(prevScores.containsKey(m.ment_id)) {
-                double M_pre = prevScores.get(m.ment_id);
-                M_f = updateScore(M_pre, M_c);
+            if(evalMap.containsKey(m.ment_id)) {
+                History M_pre =evalMap.get(m.ment_id);
+                if(M_pre.sk < 2 && M_c != 0.0)
+                    M_f = updateScore(M_pre.sc, M_c);
+                else if(M_pre.sk < 2 && M_c == 0.0)
+                    M_f = applyDecay(M_c, 2);
+                else
+                    M_f = applyDecay(M_c, M_pre.sk+1);
             }
-            if(evalMap.containsKey(m.ment_id)){
-                int ev = evalMap.get(m.ment_id);
-                if(ev >= 2) {
-                    M_f = applyDecay(M_f, ev);
-                }
-            }
-            results.add(new MentorResult(m.ment_id, m.name, PS, RS, ES, FES, M_f));
+            results.add(new MentorResult(m.ment_id, m.name, M_f));
         }
         results.sort((a, b) -> Double.compare(b.FIS, a.FIS));
         for(int i=0; i < results.size(); i++) {
@@ -318,8 +308,11 @@ public class Scoring_System {
                     results.get(i).rank = i+1;
                 }
             }
+            if(results.get(i).FIS == 0.0)
+                results.get(i).ev_sk+=1;
         }
-        writeCSV(results, "mentor_scores.csv");
+        writeCSV1(results, "mentor_scores.csv"); //output file
+        writeCSV2(results, "mentor_previousScores.csv"); //to store the data
         System.out.println("mentor_scores.csv written successfully.");
     }
 }
