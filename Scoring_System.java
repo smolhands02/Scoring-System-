@@ -83,6 +83,8 @@ public class Scoring_System {
     static double responsivenessScore(double t) {
         double n = Math.log(4.0) / 12.0;
         double r = 0.0;
+        if(t== -9999)
+            return 0.0;
         r = Math.exp(-n * t);
         return r;
     }
@@ -277,7 +279,7 @@ public class Scoring_System {
             double tAvg = mInteract.stream()
                     .mapToDouble(ia -> ia.avg_rt)
                     .average()
-                    .orElse(24.0);
+                    .orElse(-9999);
             double RS = responsivenessScore(tAvg);
             double ES = engagementScore(mInteract);
             List<Double> ratings = new ArrayList<>();
@@ -303,7 +305,19 @@ public class Scoring_System {
         }
         results.sort((a, b) -> Double.compare(b.FIS, a.FIS));
         for(int i=0; i < results.size(); i++) {
-            results.get(i).rank = i+1;
+            if(i==0){
+                results.get(i).rank =1;
+            }
+            else{
+                double prevS = results.get(i-1).FIS;
+                double currS = results.get(i).FIS;
+                if(currS == prevS){
+                    results.get(i).rank = results.get(i-1).rank;
+                }
+                else {
+                    results.get(i).rank = i+1;
+                }
+            }
         }
         writeCSV(results, "mentor_scores.csv");
         System.out.println("mentor_scores.csv written successfully.");
