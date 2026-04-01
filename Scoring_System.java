@@ -15,7 +15,6 @@ public class Scoring_System {
             projects = p;
         }
     }
-
     static class Student {
         String stud_id, nam, proj_id; //stud_id for student ID, nam for name, proj_id for Project ID
         int compms, totms; // compms for completed milestones, totms for total milestonesdouble fr; //fr for Feedback Rating, ranging from 1-5
@@ -50,14 +49,14 @@ public class Scoring_System {
         double PS, RS, ES, FES, FIS; //PS for Progress Score, RS for Responsive Score, ES for engagement score, FES for feedback score
         int rank;
 
-        MentorResult(String m, String n, double a, double b, double c, double d) {
+        MentorResult(String m, String n, double a, double b, double c, double d, double e) {
             mID = m;
             na = n;
             PS = a;
             RS = b;
             ES = c;
             FES = d;
-            FIS = w1 * PS + w2 * RS + w3 * ES + w4 * FES; //FIS for final score
+            FIS = e; //FIS for final score
         }
     }
 
@@ -120,7 +119,7 @@ public class Scoring_System {
                 w2 += 0.4;
             } else if (p < 1.0) {
                 w = 0.80 * r;
-                w2 += 0.75;
+                w2 += 0.80;
             } else {
                 w = r;
                 w2 += 1.0;
@@ -135,8 +134,8 @@ public class Scoring_System {
         return (1 - a) * ps + a * cs;
     }
 
-    static double applyDecay(double s) { //s for score
-        return s * (1 - d);
+    static double applyDecay(double s, int t) { //s for score
+        return s * Math.pow((1 - d), (double)t/2.0);
     }
 
     static List<Mentor> parseMentors(String filename) throws IOException {
@@ -198,6 +197,40 @@ public class Scoring_System {
         }
         return l;
     }
+    static Map<String, Double> parsePreviousScore(String filename){
+        Map<String, Double> map = new LinkedHashMap<>();
+        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+            String en = br.readLine();
+            while((en = br.readLine()) != null) {
+                String[] p = en.split(",", -1);
+                if(p.length < 2)
+                    continue;
+                String id = p[0].trim();
+                double sc = Double.parseDouble(p[1].trim());
+                map.put(id, sc);
+            }
+        } catch (IOException e) {
+            //ignoring this function if data is not available
+        }
+        return map;
+    }
+    static Map<String, Integer> parseEvaluation(String filename){
+        Map<String, Integer> map = new LinkedHashMap<>();
+        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+            String en = br.readLine();
+            while((en = br.readLine()) != null) {
+                String[] p = en.split(",", -1);
+                if(p.length < 2)
+                    continue;
+                String id = p[0].trim();
+                int ev = Integer.parseInt(p[1].trim());
+                map.put(id, ev);
+            }
+        } catch (IOException e) {
+            //ignoring this function if data is not available
+        }
+        return map;
+    }
     static void writeCSV(List<MentorResult> res, String filename) throws IOException {
         try(PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
             pw.println("Rank,Mentor_ID,Name,Progress Score,Responsiveness Score,Engagement Score,Feedback Score,Final Score");
@@ -210,6 +243,8 @@ public class Scoring_System {
         List<Mentor> mentors = parseMentors("mentors.csv");
         List<Student> allStudents = parseStudents("students.csv");
         List<Interaction> allInteract = parseInteraction("interactions.csv");
+        Map<String, Double> prevScores = parsePreviousScore("mentor_previousScores.csv");
+        Map<String, Integer> evalMap = parseEvaluation("mentor_eva.csv");
         Map<String,Double> feedbackMap = parseFeedback("feedbacks.csv");
         Map<String, Student> studentMap = new LinkedHashMap<>();
         for(Student s : allStudents){
@@ -252,7 +287,19 @@ public class Scoring_System {
                     ratings.add(feedbackMap.get(key));
             }
             double FES = menteeFBS(ratings, mStudents);
-            results.add(new MentorResult(m.ment_id, m.name, PS, RS, ES, FES));
+            double M_c = w1*PS + w2*RS + w3*ES + w4*FES;
+            double M_f = M_c;
+            if(prevScores.containsKey(m.ment_id)) {
+                double M_pre = prevScores.get(m.ment_id);
+                M_f = updateScore(M_pre, M_c);
+            }
+            if(evalMap.containsKey(m.ment_id)){
+                int ev = evalMap.get(m.ment_id);
+                if(ev >= 2) {
+                    M_f = applyDecay(M_f, ev);
+                }
+            }
+            results.add(new MentorResult(m.ment_id, m.name, PS, RS, ES, FES, M_f));
         }
         results.sort((a, b) -> Double.compare(b.FIS, a.FIS));
         for(int i=0; i < results.size(); i++) {
