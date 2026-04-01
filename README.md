@@ -82,13 +82,16 @@ Information about mentors
 - Recent activity is weighted more heavily than past performance
 - applyDecay() :
 - Mentor who become inactive should gradually lose score, at a decay rate of 15%.
-- (vii) writeCSV() :
+- (vii) writeCSV1() :
 - It takes the final results list and save it as a .csv file on our computer.
-- (viii) parse methods :
+-  (viii) writeCSV2() :
+-  It takes the final results list and save it as a .csv file on our computer.
+- (ix) parse methods :
 - parseMentors()     : Reads mentor data.
 - parseStudents()    : Reads student data.
 - parseFeedback()    : Reads feedback rating.
 - parseInteraction() : Reads interaction data.
+- parseEvaluation()  : Reads the previous data.
 5. User defined data type / class :
 - Mentor : Represents one mentor with all their basic information
 - Students : Represents one mentee with all their basic information
