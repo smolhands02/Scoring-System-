@@ -202,7 +202,7 @@ public class Scoring_System {
         try(PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
             pw.println("Rank,Mentor_ID,Name,Progress Score,Responsiveness Score,Engagement Score,Feedback Score,Final Score");
             for(MentorResult r : res){
-                pw.printf("%d,%s,%s,%.4f,%.4f,%.4f,%.4f,%.4f%n", r.rank, r.mID, r.na, r.PS, r.RS, r.ES, r.FES, r.FIS);
+                pw.printf("%d,%s,%s,%.6f,%.6f,%.6f,%.6f,%.6f%n", r.rank, r.mID, r.na, r.PS, r.RS, r.ES, r.FES, r.FIS);
             }
         }
     }
