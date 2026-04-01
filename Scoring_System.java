@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.*;
 public class Scoring_System {
-    static double w1 = 0.30, w2 = 0.30, w3 = 0.25, w4 = 0.15, a = 0.60, d = 0.15;
+    static double w1 = 0.30, w2 = 0.30, w3 = 0.30, w4 = 0.10, a = 0.60, d = 0.15;
 
     static class Mentor {
         String ment_id, name, dom; // dom for domain, ment_id for mentor ID
